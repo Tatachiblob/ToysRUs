@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TOYSRUS Web Page - Tamiya's Products</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="jquery-3.2.1.min.js"></script>
+    </head>
+    <body>
+        <h1>Displaying All Tamiya's products</h1>
+        <table style="width: 100%">
+            <thead>
+                <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Product Line</th>
+                    <th>Buy Price</th>
+                    <th>MSRP</th>
+                </tr>
+            </thead>
+            <tbody id="allProducts"></tbody>
+        </table>
+    </body>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            fetchProducts();
+        });
+        
+        function fetchProducts(){
+            var getUrl = "http://localhost:8084/com.sysintg.tamiya/api/v2/product/getAllProducts";
+            
+            $.ajax({
+               url: getUrl,
+               type: 'GET',
+               contentType: 'application/json',
+               success: function(data, textStatus, jqXHR){
+                   console.log("Success");
+                   //console.log(data);
+                   var tb = "";
+                   for(var i = 0; i < data.length; i++){
+                       tb += "<tr><td>" + data[i].productCode + "</td><td>" + data[i].productName + "</td><td>" + data[i].productLine + "</td><td>" + data[i].buyprice + "</td><td>" + data[i].MSRP + "</td></tr>";
+                   }
+                   $('#allProducts').html(tb);
+               },
+               error: function(jqXHR, textStatus, errorThrown){
+                   console.log("error");
+                   console.log(jqXHR);
+               },
+               complete: function(jqXHR, textStatus){
+                   console.log("complete");
+                   console.log(jqXHR);
+               }
+            });
+        }
+    </script>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TOYSRUS Web Page - Order Product</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="jquery-3.2.1.min.js"></script>
+        <script src="polyfill.js"></script>
+    </head>
+    <body>
+        <h1>Order Products From Tamiya</h1>
+        <button onclick="addOrder()">Add order</button>
+        <button id="submitBtn">Submit Order</button>
+        <form id="orderForm">
+            <div id="orders"></div>
+        </form>
+    </body>
+    <script type="text/javascript">
+        
+        var products = fetchProducts();
+        var orderIds = 0;
+        
+        $(document).ready(function(){
+            
+            //console.log(products);
+            $('#submitBtn').click(function(e){
+                var orders = [];
+                $(".order").each(function(){
+                    var order = {};
+                    order.productCode = $(this).find('.products').val();
+                    order.quantityOrdered = $(this).find('.qtys').val();
+                    /*
+                    console.log("Product: " + $(this).find('.products').val()); 
+                    console.log("Qty: " + $(this).find('.qtys').val());
+                    console.log(order);
+                    */
+                    orders.push(order);
+                    //console.log("break");
+                });
+                
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8084/com.sysintg.tamiya/api/v1/product/sendOrder",
+                    data: JSON.stringify(orders),
+                    contentType: "application/json",
+                    error: function(jqXHR, textStatus, errorThrown){
+                        console.log("error");
+                        console.log(jqXHR.getAllResponseHeaders());
+                    },
+                    success: function(data){
+                        console.log(data);
+                    },
+                    complete: function(XMLHttpRequest){
+                        console.log(XMLHttpRequest);
+                    }
+                });
+            });
+            
+        });
+        
+        function fetchProducts(){
+            var prd = [];
+            var getUrl = "http://localhost:8084/com.sysintg.tamiya/api/v1/product/getAllProducts";
+            
+            $.ajax({
+               url: getUrl,
+               async: false,
+               type: 'GET',
+               contentType: 'application/json',
+               success: function(data, textStatus, jqXHR){
+                   console.log("Success");
+                   //console.log(data);
+                   
+                   for(var i = 0; i < data.length; i++){
+                       data[i].isUsed = false;
+                   }
+                   prd = data;
+               },
+               error: function(jqXHR, textStatus, errorThrown){
+                   console.log("error");
+                   console.log(jqXHR);
+               },
+               complete: function(jqXHR, textStatus){
+                   console.log("complete");
+                   console.log(jqXHR);
+               }
+            });
+            
+            return prd;
+        }
+        
+        function addOrder(){
+            var append = "<p class='order'>Enter Product: " + populateDropdown() + " : <input class='qtys' type='number' name='qty" + orderIds + "' min='1'/>pcs</p>";            
+            $('#orders').append(append);
+            orderIds++;
+        }
+        
+        function populateDropdown(){
+            var options = "";
+            
+            for(var i = 0 ; i < products.length; i++){
+                options += "<option value=" + products[i].productCode + ">" + products[i].productCode + ":" + products[i].productName + "</option>";
+            }
+            
+            var selectList = "<select class='products' name='product" + orderIds + "'>" + options + "</select>";
+            return selectList;
+        }
+        
+    </script>
+</html>
